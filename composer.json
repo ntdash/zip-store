@@ -1,0 +1,28 @@
+{
+  "name": "ntdash/zipstore",
+  "description": "a single level virtual zip store",
+  "autoload": {
+    "psr-4": {
+      "ZipStore\\": "src/"
+    }
+  },
+  "license": "MIT",
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    },
+    "files": [
+      "tests/_helpers/default.php"
+    ]
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "laravel/pint": "^1.21",
+    "phpunit/phpunit": "^11.5",
+    "symfony/process": "^7.2"
+  },
+  "require": {
+    "php": "^8.1",
+    "nesbot/carbon": "^3.8"
+  }
+}

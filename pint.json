@@ -1,0 +1,33 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "method_argument_space": { "on_multiline": "ensure_fully_multiline" },
+        "yoda_style": {
+            "always_move_variable": true,
+            "equal": true,
+            "identical": true,
+            "less_and_greater": null
+        },
+        "ordered_class_elements": {
+            "order": [
+                "use_trait",
+                "case",
+                "constant_public",
+                "constant_protected",
+                "constant_private",
+                "property_public",
+                "property_protected",
+                "property_private",
+                "construct",
+                "destruct",
+                "magic",
+                "phpunit",
+                "method_public",
+                "method_protected",
+                "method_private"
+            ],
+            "case_sensitive": true,
+            "sort_algorithm": "alpha"
+        }
+    }
+}
