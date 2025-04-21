@@ -2,15 +2,12 @@
 
 namespace ZipStore;
 
-use Closure;
 use ZipStore\Supports\StringBuffer;
 
 class CentralDirectory
 {
     /* caching */
     private string $content;
-
-    private int $offset;
 
     private int $size;
 
@@ -19,7 +16,7 @@ class CentralDirectory
      */
     public function __construct(
         private OpenedStore $store,
-        private Closure $getEOFOffset
+        private readonly int $offset
     ) {}
 
     public function getContent(): string
@@ -43,7 +40,7 @@ class CentralDirectory
 
     public function getOffset(): int
     {
-        return $this->offset ??= call_user_func($this->getEOFOffset);
+        return $this->offset;
     }
 
     public function getSize(): int

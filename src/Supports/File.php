@@ -25,9 +25,41 @@ class File implements Stringable
         $this->file = $this->validateFilepath($filepath);
     }
 
+    public function __serialize()
+    {
+        $data = [
+            'file' => $this->file->getRealPath(),
+        ];
+
+        if (isset($this->defaultTimestamp)) {
+            $data['defaultTimestamp'] = $this->defaultTimestamp;
+        }
+
+        if (isset($this->packedCRC32Digest)) {
+            $data['packedCRC32Digest'] = $this->packedCRC32Digest;
+        }
+
+        return $data;
+    }
+
     public function __toString(): string
     {
         return $this->getRealpath();
+    }
+
+    /**
+     * @param  array{file:string,defaultTimestamp:int,packedCRC32Digest:string}  $data
+     * @return void
+     */
+    public function __unserialize(array $data)
+    {
+        $this->file = $this->validateFilepath($data['file']);
+
+        foreach (['defaultTimestamp', 'packedCRC32Digest'] as $key) {
+            if (in_array($key, $data)) {
+                $this->{$key} = $data[$key];
+            }
+        }
     }
 
     /** @return ($timestamp is true ? int : Carbon) */
