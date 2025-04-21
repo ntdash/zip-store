@@ -9,7 +9,6 @@ use ZipStore\Supports\StringBuffer;
 
 /**
  * @phpstan-import-type NormalizedEntryDetails from Store
- * 
  */
 class OpenedStore
 {
@@ -36,7 +35,7 @@ class OpenedStore
 
         $this->cdir = new CentralDirectory(
             $this,
-            $this->entries->getEOFOffset(...)
+            $this->entries->getEOFOffset()
         );
 
         $this->eocdir = new EndOfCentralDirectory($this->cdir);
@@ -44,6 +43,10 @@ class OpenedStore
 
     public function getSize(): int
     {
+        if (isset($this->size)) {
+            return $this->size;
+        }
+
         $entriesSize = $this->entries->getSize();
         $cdSize = $this->cdir->getSize();
         $eocdSize = $this->eocdir->getSize();

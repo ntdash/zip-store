@@ -9,6 +9,7 @@ class StringBuffer implements Stringable
 {
     public string $content = '';
 
+    /** @var int<0,max> */
     public int $size = 0;
 
     public function __construct(public readonly int $limit)

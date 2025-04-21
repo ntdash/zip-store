@@ -5,11 +5,10 @@ namespace ZipStore;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
-use RuntimeException;
 use Traversable;
 
 /**
- * @phpstan-import-type NormalizedEntryDetails from Store 
+ * @phpstan-import-type NormalizedEntryDetails from Store
  *
  * @implements IteratorAggregate<int,Entry>
  */
@@ -62,8 +61,7 @@ class EntryCollection implements Countable, IteratorAggregate
     }
 
     /**
-     * 
-     * @param NormalizedEntryDetails $entryDetails 
+     * @param  NormalizedEntryDetails  $entryDetails
      */
     private function createEntry(array $entryDetails): Entry
     {

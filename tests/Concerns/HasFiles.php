@@ -28,6 +28,6 @@ trait HasFiles
     {
         static $files;
 
-        return $files ??= $this->getFiles(tests_path('_data/input'));
+        return $files ??= $this->getFiles(\tests_path('_data/input'));
     }
 }
