@@ -2,7 +2,6 @@
 
 namespace ZipStore;
 
-use ZipStore\Exceptions\OutOfRangeOffsetException;
 use ZipStore\Exceptions\ZipStoreIOException;
 use ZipStore\Supports\StringBuffer;
 
@@ -38,6 +37,11 @@ class OpenedStore
         );
 
         $this->eocdir = new EndOfCentralDirectory($this->cdir);
+    }
+
+    public function eof(): bool
+    {
+        return $this->getSize() === $this->readingOffset;
     }
 
     public function getSize(): int
@@ -145,6 +149,7 @@ class OpenedStore
 
         if ($offset < 0) {
             $this->readingOffset = $this->getSize();
+
             return -1;
         }
 
@@ -153,6 +158,7 @@ class OpenedStore
         }
 
         $this->readingOffset = $offset;
+
         return 0;
     }
 }
