@@ -2,7 +2,6 @@
 
 namespace ZipStore;
 
-use OutOfRangeException;
 use ZipStore\Exceptions\OutOfRangeOffsetException;
 use ZipStore\Exceptions\ZipStoreIOException;
 use ZipStore\Supports\StringBuffer;
@@ -136,20 +135,24 @@ class OpenedStore
     /**
      * seek virtually packed zip file at offset
      */
-    public function seek(int $offset): void
+    public function seek(int $offset, int $whence = SEEK_SET): int
     {
+        $offset += match ($whence) {
+            SEEK_CUR => $this->readingOffset,
+            SEEK_END => $this->getSize(),
+            default => 0,
+        };
+
         if ($offset < 0) {
-            throw new OutOfRangeException('Negative offset not supported');
+            $this->readingOffset = $this->getSize();
+            return -1;
         }
 
         if ($offset > $this->getSize()) {
-            throw new OutOfRangeOffsetException(sprintf(
-                'Attempt to seeked out of range offset (%s) from a file with size: %d',
-                $offset,
-                $this->size
-            ));
+            $offset = $this->getSize();
         }
 
         $this->readingOffset = $offset;
+        return 0;
     }
 }
