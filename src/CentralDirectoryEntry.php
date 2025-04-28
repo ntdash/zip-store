@@ -4,6 +4,7 @@ namespace ZipStore;
 
 use ZipStore\Contracts\ZipHeader;
 use ZipStore\Supports\Utils;
+use ZipStore\Supports\ZipGPBitsGenerator;
 use ZipStore\Supports\ZipXFieldGenerator;
 
 /**
@@ -54,7 +55,7 @@ class CentralDirectoryEntry implements ZipHeader
         $content .= pack('v', 0x0A);
 
         /* general purpose flags */
-        $content .= $b2null;
+        $content .= (string) new ZipGPBitsGenerator(utf8: true);
 
         /* compression method */
         $content .= $b2null;

@@ -4,6 +4,7 @@ namespace ZipStore;
 
 use ZipStore\Contracts\ZipHeader;
 use ZipStore\Supports\Utils;
+use ZipStore\Supports\ZipGPBitsGenerator;
 use ZipStore\Supports\ZipXFieldGenerator;
 
 class LocalHeader implements ZipHeader
@@ -28,7 +29,7 @@ class LocalHeader implements ZipHeader
 
     private function generate(): string
     {
-        $b2null = pack('v', 0x00);
+        $null2B = pack('v', 0x00);
         $file = $this->entry->file;
         $fileSize = $file->getSize();
         $fileMTime = $file->getMTime();
@@ -44,10 +45,10 @@ class LocalHeader implements ZipHeader
         $content .= pack('v', 0x0A);
 
         /* general purpose bit flag [2bytes] */
-        $content .= $b2null;
+        $content .= (string) new ZipGPBitsGenerator(utf8: true);
 
         /* compression method [0=none] */
-        $content .= $b2null;
+        $content .= $null2B;
 
         /* last modification time */
         $content .= pack('v', Utils::toMSDOSTime($fileMTime));
