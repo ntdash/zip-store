@@ -65,6 +65,10 @@ class EntryCollection implements Countable, IteratorAggregate
      */
     private function createEntry(array $entryDetails): Entry
     {
-        return new Entry($this->getEOFOffset(), $entryDetails['filepath'], $entryDetails['entryName']);
+        return new Entry(
+            $this->getEOFOffset(),
+            $entryDetails['filepath'],
+            $entryDetails['entryName']
+        );
     }
 }

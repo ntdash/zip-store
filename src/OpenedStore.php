@@ -18,7 +18,7 @@ class OpenedStore
 
     public EndOfCentralDirectory $eocdir;
 
-    private int $readingOffset;
+    private int $readBytes;
 
     private int $size;
 
@@ -28,7 +28,7 @@ class OpenedStore
      */
     public function __construct(array $entries)
     {
-        $this->readingOffset = 0;
+        $this->readBytes = 0;
         $this->entries = new EntryCollection($entries);
 
         $this->cdir = new CentralDirectory(
@@ -41,7 +41,7 @@ class OpenedStore
 
     public function eof(): bool
     {
-        return $this->getSize() === $this->readingOffset;
+        return $this->getSize() === $this->readBytes;
     }
 
     public function getSize(): int
@@ -73,11 +73,11 @@ class OpenedStore
             $this->seek($offset);
         }
 
-        $offset = $this->readingOffset;
+        $offset = $this->readBytes;
 
         /* fetch bytes */
         /* from entries if $offset < $entriesSize */
-        if ($this->readingOffset < $this->entries->getSize()) {
+        if ($this->readBytes < $this->entries->getSize()) {
 
             foreach ($this->entries as $entry) {
                 /* skip if not in range */
@@ -131,7 +131,7 @@ class OpenedStore
         }
 
         /* adjust offset */
-        $this->readingOffset += $buffer->size;
+        $this->readBytes += $buffer->size;
 
         return $buffer;
     }
@@ -142,13 +142,13 @@ class OpenedStore
     public function seek(int $offset, int $whence = SEEK_SET): int
     {
         $offset += match ($whence) {
-            SEEK_CUR => $this->readingOffset,
+            SEEK_CUR => $this->readBytes,
             SEEK_END => $this->getSize(),
             default => 0,
         };
 
         if ($offset < 0) {
-            $this->readingOffset = $this->getSize();
+            $this->readBytes = $this->getSize();
 
             return -1;
         }
@@ -157,7 +157,7 @@ class OpenedStore
             $offset = $this->getSize();
         }
 
-        $this->readingOffset = $offset;
+        $this->readBytes = $offset;
 
         return 0;
     }

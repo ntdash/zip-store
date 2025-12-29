@@ -129,7 +129,7 @@ class File implements Stringable
             $digest = hash_file('crc32b', $filepath = $this->getFilepath());
 
             if (false === $digest) {
-                throw new Exception(sprintf('Failed to create a crc-32 digest of file: %s', $filepath));
+                throw new Exception(sprintf('Failed to generate a crc-32 digest of file: %s', $filepath));
             }
 
             $this->packedCRC32Digest = pack('V', hexdec($digest));
