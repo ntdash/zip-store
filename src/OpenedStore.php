@@ -148,8 +148,6 @@ class OpenedStore
         };
 
         if ($offset < 0) {
-            $this->readBytes = $this->getSize();
-
             return -1;
         }
 
