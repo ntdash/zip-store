@@ -5,9 +5,9 @@ namespace ZipStore\Supports;
 use Carbon\Carbon;
 use Exception;
 use SplFileInfo;
-use Stringable;
+use ZipStore\Contracts\ZipStoreFile;
 
-class File implements Stringable
+class File implements ZipStoreFile
 {
     private int $defaultTimestamp;
 
@@ -28,7 +28,7 @@ class File implements Stringable
     public function __serialize()
     {
         $data = [
-            'file' => $this->file->getRealPath(),
+            'filepath' => $this->file->getRealPath(),
         ];
 
         if (isset($this->defaultTimestamp)) {
@@ -48,12 +48,11 @@ class File implements Stringable
     }
 
     /**
-     * @param  array{file:string,defaultTimestamp:int,packedCRC32Digest:string}  $data
-     * @return void
-     */
+     * @param  array{filepath:string,defaultTimestamp:int,packedCRC32Digest:string}  $data
+     * */
     public function __unserialize(array $data)
     {
-        $this->file = $this->validateFilepath($data['file']);
+        $this->file = $this->validateFilepath($data['filepath']);
 
         foreach (['defaultTimestamp', 'packedCRC32Digest'] as $key) {
             if (in_array($key, $data)) {
@@ -152,6 +151,12 @@ class File implements Stringable
     public function getUID(): int
     {
         return $this->file->getOwner() ?: 1000;
+    }
+
+    public function read(int $offset, int $length): false|string
+    {
+        // @phpstan-ignore argument.type
+        return \file_get_contents($this->getRealpath(), offset: $offset, length: $length);
     }
 
     private function getDefaultTimestamp(): int

@@ -17,8 +17,8 @@ class Store
 
     public function addFile(string $filepath, ?string $entryName = null): void
     {
-        $entryName ??= basename($filepath);
-        $this->addFiles([compact('entryName', 'filepath')]);
+        $entryName ??= \basename($filepath);
+        $this->addFiles([\compact('entryName', 'filepath')]);
     }
 
     /**
@@ -45,7 +45,7 @@ class Store
 
     public function open(): OpenedStore
     {
-        return new OpenedStore(array_values($this->entries));
+        return new OpenedStore(\array_values($this->entries));
     }
 
     /**
@@ -55,10 +55,10 @@ class Store
     private function normalizeEntry(string|array $entry): array
     {
 
-        if (is_string($entry)) {
+        if (\is_string($entry)) {
             return [
                 'filepath' => $entry,
-                'entryName' => basename($entry),
+                'entryName' => \basename($entry),
             ];
         }
 

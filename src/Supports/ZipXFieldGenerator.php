@@ -2,10 +2,12 @@
 
 namespace ZipStore\Supports;
 
+use ZipStore\Contracts\ZipStoreFile;
+
 abstract class ZipXFieldGenerator
 {
     /* generate zip extra field[id:5455] a.k.a file timestamps */
-    public static function xField_5455(File $file, int $mask = 0x00): string
+    public static function xField_5455(ZipStoreFile $file, int $mask = 0x00): string
     {
         $signature = 0x5455;
 
@@ -30,7 +32,7 @@ abstract class ZipXFieldGenerator
     }
 
     /* generate zip extra field[id:7875] a.k.a file owner/group */
-    public static function xField_7875(File $file): string
+    public static function xField_7875(ZipStoreFile $file): string
     {
         $signature = 0x7875;
 
