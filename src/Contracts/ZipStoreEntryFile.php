@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Serializable;
 use Stringable;
 
-interface ZipStoreFile extends Stringable
+interface ZipStoreEntryFile extends Stringable
 {
     /** @return ($timestamp is true ? int : Carbon) */
     public function getATime(bool $timestamp = false): int|Carbon;

@@ -2,19 +2,19 @@
 
 namespace ZipStore;
 
-use ZipStore\Contracts\ZipStoreFile;
-use ZipStore\Exceptions\BadEntryFileAbstract;
+use ZipStore\Contracts\ZipStoreEntryFile;
+use ZipStore\Exceptions\InvalidEntryFileClass;
 use ZipStore\Supports\File;
 use ZipStore\Supports\StringBuffer;
 
 class Entry
 {
-    /** @var class-string<ZipStoreFile> */
+    /** @var class-string<ZipStoreEntryFile> */
     private static $entryFileClass = File::class;
 
     public readonly string $entryName;
 
-    public readonly ZipStoreFile $file;
+    public readonly ZipStoreEntryFile $file;
 
     public readonly LocalHeader $localHeader;
 
@@ -72,15 +72,15 @@ class Entry
      */
     public static function setEntryFileClass(string $abstract)
     {
-        if (! \is_a($abstract, ZipStoreFile::class, true)) {
-            throw new BadEntryFileAbstract(
-                \sprintf('"%s" does not implement the "%s" interface', $abstract,ZipStoreFile::class)
+        if (! \is_a($abstract, ZipStoreEntryFile::class, true)) {
+            throw new InvalidEntryFileClass(
+                \sprintf('"%s" does not implement the "%s" interface', $abstract,ZipStoreEntryFile::class)
             );
         }
 
         foreach (['__serialize', '__unserialize'] as $s_method) {
             if (! \method_exists($abstract, $s_method)) {
-                throw new BadEntryFileAbstract('Missing serialization magic methods');
+                throw new InvalidEntryFileClass('Missing serialization magic methods');
             }
         }
 

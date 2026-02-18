@@ -5,9 +5,9 @@ namespace ZipStore\Supports;
 use Carbon\Carbon;
 use Exception;
 use SplFileInfo;
-use ZipStore\Contracts\ZipStoreFile;
+use ZipStore\Contracts\ZipStoreEntryFile;
 
-class File implements ZipStoreFile
+class File implements ZipStoreEntryFile
 {
     private int $defaultTimestamp;
 
