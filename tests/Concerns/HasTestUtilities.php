@@ -12,7 +12,11 @@ trait HasTestUtilities
 {
     use HasFiles;
 
-    /** @return array<string,string> */
+    /**
+     *
+     * @param Store $store
+     * @return array<string,string>
+     */
     private function addInputFilesIntoStore(Store $store): array
     {
         $files = $this->getInputsFiles();

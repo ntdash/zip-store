@@ -3,20 +3,21 @@
 namespace Tests;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use ZipStore\Exceptions\InvalidEntryNameException;
 use ZipStore\Exceptions\InvalidFilepathException;
-use ZipStore\Exceptions\ValidationException;
 use ZipStore\Store;
 
 #[CoversClass(Store::class)]
-class ValidationDuringFileAdditionTest extends TestCase
+class ValidationOfFileAsEntryArgumentTest extends TestCase
 {
     private Store $store;
 
     protected function setUp(): void
     {
-        $this->store = new Store;
+        $this->store = new Store(Store::STRICT);
     }
 
     protected function tearDown(): void
@@ -24,19 +25,24 @@ class ValidationDuringFileAdditionTest extends TestCase
         unset($this->store);
     }
 
-    public function test_validate_entry_name_argument(): void {
+    #[Test]
+    #[TestDox('invalid entryName argument throw an exception')]
+    public function handle_entry_name(): void
+    {
 
-        $filepath = tests_path("_data/input/map.json");
-        $badEntryName = "./map2.json";
+        $filepath = tests_path('_data/input/map.json');
+        $badEntryName = './map2.json';
 
-        $this->assertFileExists($filepath, "File should exist");
+        $this->assertFileExists($filepath, 'File should exist');
 
         $this->expectException(InvalidEntryNameException::class);
 
         $this->store->addFile($filepath, $badEntryName);
     }
 
-    public function test_validate_filepath_argument(): void
+    #[Test]
+    #[TestDox('invalid filepath argument throw an exception')]
+    public function handle_filepath(): void
     {
         $filepath = './should-not-exit';
 

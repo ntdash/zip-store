@@ -2,15 +2,17 @@
 
 namespace ZipStore;
 
+use ZipStore\Exceptions\FileTooLargeException;
 use ZipStore\Exceptions\ZipStoreIOException;
+use ZipStore\Supports\EntryArgument;
 use ZipStore\Supports\StringBuffer;
 
-/**
- * @phpstan-import-type NormalizedEntryDetails from Store
- */
+
 class OpenedStore
 {
     private const DEFAULT_BUFFER_SIZE = 1024 * 512;
+
+    private const MAX_ZIP_FILESIZE = 1024 * 1024 * 1024 * 4;
 
     public CentralDirectory $cdir;
 
@@ -23,7 +25,7 @@ class OpenedStore
     private int $size;
 
     /**
-     * @param  list<NormalizedEntryDetails>  $entries
+     * @param  list<EntryArgument>  $entries
      * @return void
      */
     public function __construct(array $entries)
@@ -37,6 +39,10 @@ class OpenedStore
         );
 
         $this->eocdir = new EndOfCentralDirectory($this->cdir);
+
+        /** validate the effective zipfile upon initialization */
+        $this->validateFilesize();
+
     }
 
     public function eof(): bool
@@ -158,5 +164,12 @@ class OpenedStore
         $this->readBytes = $offset;
 
         return 0;
+    }
+
+    private function validateFilesize(): void
+    {
+        if (self::MAX_ZIP_FILESIZE < $this->getSize()) {
+            throw new FileTooLargeException;
+        }
     }
 }
