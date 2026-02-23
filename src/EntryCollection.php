@@ -6,10 +6,9 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use Traversable;
+use ZipStore\Supports\EntryArgument;
 
 /**
- * @phpstan-import-type NormalizedEntryDetails from Store
- *
  * @implements IteratorAggregate<int,Entry>
  */
 class EntryCollection implements Countable, IteratorAggregate
@@ -22,7 +21,7 @@ class EntryCollection implements Countable, IteratorAggregate
     private int $size;
 
     /**
-     * @param  list<NormalizedEntryDetails>  $entries
+     * @param  list<EntryArgument>  $entries
      */
     public function __construct(array $entries)
     {
@@ -60,11 +59,13 @@ class EntryCollection implements Countable, IteratorAggregate
         );
     }
 
-    /**
-     * @param  NormalizedEntryDetails  $entryDetails
-     */
-    private function createEntry(array $entryDetails): Entry
+
+    private function createEntry(EntryArgument $args): Entry
     {
-        return new Entry($this->getEOFOffset(), $entryDetails['filepath'], $entryDetails['entryName']);
+        return new Entry(
+            $this->getEOFOffset(),
+            $args->filepath,
+            $args->entryName
+        );
     }
 }

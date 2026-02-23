@@ -41,7 +41,7 @@ class StringBuffer implements Stringable
 
     public function write(string $content): int
     {
-        $content = substr($content, 0, $this->limit - $this->size);
+        $content = \substr($content, 0, $this->limit - $this->size);
         $toWrite = \strlen($content);
 
         $this->size += $toWrite;
