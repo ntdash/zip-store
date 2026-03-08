@@ -4,7 +4,7 @@ namespace ZipStore\Exceptions;
 
 use Throwable;
 
-class InvalidFilepathException extends ZipStoreException
+class FileNotFoundException extends ZipStoreException
 {
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

@@ -6,7 +6,6 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use Traversable;
-use ZipStore\Supports\EntryArgument;
 
 /**
  * @implements IteratorAggregate<int,Entry>
@@ -59,13 +58,12 @@ class EntryCollection implements Countable, IteratorAggregate
         );
     }
 
-
-    private function createEntry(EntryArgument $args): Entry
+    private function createEntry(EntryArgument $arg): Entry
     {
         return new Entry(
             $this->getEOFOffset(),
-            $args->filepath,
-            $args->entryName
+            $arg->file,
+            $arg->entryName
         );
     }
 }

@@ -4,11 +4,10 @@ namespace ZipStore;
 
 use ZipStore\Exceptions\DuplicateEntryException;
 use ZipStore\Exceptions\EntriesOverflowException;
+use ZipStore\Exceptions\FileNotFoundException;
 use ZipStore\Exceptions\FileTooLargeException;
 use ZipStore\Exceptions\InvalidEntryNameException;
-use ZipStore\Exceptions\InvalidFilepathException;
 use ZipStore\Exceptions\ZipStoreException;
-use ZipStore\Supports\EntryArgument;
 
 class Store
 {
@@ -24,13 +23,13 @@ class Store
     /**  max entries count: 65535 */
     public const ENTRIES_LIMIT = 0xFFFF;
 
-    /** max size: 3.75GB */
+    /** max size: 3.75 GiB */
     public const ENTRY_MAX_FILESIZE = 0xF000_0000;
 
     /** placehold, default, ... */
     public const NO_EXTRA = 0x00;
 
-    /** throw an exception entry (i.e: filepath and/or entryName) of one the adding method is invalid */
+    /** throw an exception entry (i.e: identifier and/or entryName) of one the adding method is invalid */
     public const STRICT = 0x80;
 
     private int $dupMode;
@@ -48,25 +47,22 @@ class Store
     }
 
     /**
-     * @throws InvalidFilepathException
+     * @throws FileNotFoundException
      * @throws InvalidEntryNameException
      */
-    public function addFile(string|EntryArgument $filepathOrEntry, ?string $entryName = null): bool
+    public function addFile(string|EntryArgument $identifierOrEntry, ?string $entryName = null): bool
     {
-        if (is_string($filepathOrEntry)) {
-            $filepath = $filepathOrEntry;
-            $entryName ??= \basename($filepath);
-
-            $filepathOrEntry = new EntryArgument(\compact('entryName', 'filepath'));
+        if (is_string($identifierOrEntry)) {
+            $identifierOrEntry = new EntryArgument($identifierOrEntry, $entryName);
         }
 
-        return $this->addFiles([$filepathOrEntry]);
+        return $this->addFiles([$identifierOrEntry]);
     }
 
     /**
      * @param  array<string|EntryArgument>  $entries
      *
-     * @throws InvalidFilepathException
+     * @throws FileNotFoundException
      * @throws InvalidEntryNameException
      * @throws DuplicateEntryException
      */
@@ -151,8 +147,9 @@ class Store
                 $len = \strlen($current->entryName);
 
                 foreach ($this->entries as $entry) {
-                    if (0 == \strncmp($current->entryName, $entry->entryName, $len))
+                    if (0 == \strncmp($current->entryName, $entry->entryName, $len)) {
                         $count++;
+                    }
                 }
 
                 $current = $newValue->clone(entryName: \sprintf(
@@ -173,10 +170,7 @@ class Store
 
     private function validateEntryFileSize(EntryArgument $entry): void
     {
-        \clearstatcache(true, $entry->filepath);
-        $entryFilesize = \filesize($entry->filepath);
-
-        if (false === $entryFilesize || self::ENTRY_MAX_FILESIZE < $entryFilesize) {
+        if (self::ENTRY_MAX_FILESIZE < $entry->file->getSize()) {
             throw new FileTooLargeException;
         }
     }

@@ -3,47 +3,57 @@
 namespace Tests;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use SplFileInfo;
-use Tests\Concerns\HasTestUtilities;
+use Tests\Concerns\HasFiles;
+use Tests\Concerns\HasStoreTestUtilities;
+use Tests\Exceptions\FileIntegrityException;
 use ZipStore\OpenedStore;
 use ZipStore\Store;
 
 #[CoversClass(Store::class)]
 class PartialReadingAfterPostSerializationTest extends TestCase
 {
-    use HasTestUtilities;
+    use HasFiles;
+    use HasStoreTestUtilities;
 
-    private SplFileInfo $archivePath;
+    private \SplFileInfo $archivePath;
 
     /** @var array<string,string> */
-    private array $input_hashes;
+    private array $inputHashes;
 
     private string $serialiazedOpenedStore;
 
     protected function setUp(): void
     {
         $store = new Store;
-        $this->archivePath = $this->getArchivePath();
-        $this->input_hashes = $this->addInputFilesIntoStore($store);
+        $this->inputHashes = $this->fillStoreWithTestFiles($store);
+        $this->archivePath = new SplFileInfo($this->resolveArchivePath());
 
         $openedStore = $store->open();
-        $this->partialReading($openedStore);
+        $this->partialRead($openedStore);
 
         $this->serialiazedOpenedStore = \serialize($openedStore);
     }
 
-    public function test_partial_reading_after_deserialiazation(): void
+    #[Test]
+    #[TestDox('Partial reading after deserialiazation')]
+    public function handle(): void
     {
         /** @var OpenedStore */
         $openedStore = \unserialize($this->serialiazedOpenedStore);
 
         $this->writeStoreInto($openedStore, $this->archivePath, append: true);
 
-        $this->postCompressionTask($this->archivePath, $this->input_hashes);
+        $this->assertTrue(
+            $this->postCompressionTask(),
+            'Output files integrity check failed'
+        );
     }
 
-    private function partialReading(OpenedStore $openedStore): void
+    private function partialRead(OpenedStore $openedStore): void
     {
         $storeSize = $openedStore->getSize();
         $toBeReadSize = (int) \floor(\random_int((int) ($storeSize / 3), (int) ($storeSize / 2)));
@@ -51,8 +61,11 @@ class PartialReadingAfterPostSerializationTest extends TestCase
         $bufferSize = (int) \floor((int) $toBeReadSize / 3);
         $leftSize = $toBeReadSize;
 
-        $stream = fopen($this->archivePath->getPathname(), 'w');
-        $this->assertIsResource($stream);
+        $stream = \fopen($this->archivePath->getPathname(), 'w');
+
+        if (! \is_resource($stream)) {
+            throw new \Exception('Failed to open file');
+        }
 
         try {
             while ($leftSize > 0) {
@@ -64,11 +77,9 @@ class PartialReadingAfterPostSerializationTest extends TestCase
 
                 $leftSize -= $written = \fwrite($stream, $buffer, $buffer->size);
 
-                $this->assertEquals(
-                    $buffer->size,
-                    $written,
-                    'Failed to write buffer into archive file'
-                );
+                if ($written !== $buffer->size) {
+                    throw new \Exception('Failed to write read content into buffer');
+                }
             }
 
             \fflush($stream);
@@ -76,11 +87,23 @@ class PartialReadingAfterPostSerializationTest extends TestCase
             \fclose($stream);
         }
 
-        $this->assertSame(
-            $toBeReadSize,
-            $this->archivePath->getSize(),
-            'Final size of the resulting file is not equal to the size to be read'
-        );
+        if ($this->archivePath->getSize() !== $toBeReadSize) {
+            throw new \Exception('Mismatch between archive size and $toBeRead size');
+        }
+    }
 
+    private function postCompressionTask(): bool
+    {
+        try {
+            $outputPath = $this->resolveOutputPath();
+
+            $this->deArchiveInto($this->archivePath, $outputPath);
+
+            $this->checkOutputFilesIntegrity($this->inputHashes, $outputPath);
+        } catch (FileIntegrityException) {
+            return false;
+        }
+
+        return true;
     }
 }

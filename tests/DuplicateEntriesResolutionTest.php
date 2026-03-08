@@ -6,9 +6,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use ZipStore\EntryArgument;
 use ZipStore\Exceptions\DuplicateEntryException;
 use ZipStore\Store;
-use ZipStore\Supports\EntryArgument;
 
 #[CoversClass(Store::class)]
 class DuplicateEntriesResolutionTest extends TestCase
@@ -72,14 +72,14 @@ class DuplicateEntriesResolutionTest extends TestCase
         $soleEntry = $entries[0];
 
         $this->assertEquals(
-            $lastInput->filepath,
-            $soleEntry->filepath,
+            $lastInput->file->getIdentifier(),
+            $soleEntry->file->getIdentifier(),
             'The sole entry of the store should be the last added input'
         );
     }
 
     #[Test]
-    #[TestDox('[DUP_THROW], duplicated entries are not resolve but exception are thrown upon seeing one')]
+    #[TestDox('[DUP_FAILED], return false upon seeing duplicate entries')]
     public function handle_thrown(): void
     {
         $store = new Store(Store::DUP_FAILED);
@@ -93,7 +93,7 @@ class DuplicateEntriesResolutionTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('[STRICT|THROW], duplicated entries are not resolve but exception are thrown upon seeing one')]
+    #[TestDox('[STRICT|FAILED], exception are thrown upon seeing duplicate entries')]
     public function handle_thrown_under_strict(): void
     {
         $store = new Store(Store::STRICT);

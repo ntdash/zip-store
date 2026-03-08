@@ -6,12 +6,13 @@ use Carbon\Carbon;
 use Exception;
 use SplFileInfo;
 use ZipStore\Contracts\ZipStoreEntryFile;
+use ZipStore\Exceptions\FileNotFoundException;
 
-class File implements ZipStoreEntryFile
+class LocalFile implements ZipStoreEntryFile
 {
     private int $defaultTimestamp;
 
-    private SplFileInfo $file;
+    private SplFileInfo $fileinfo;
 
     private string $packedCRC32Digest;
 
@@ -22,13 +23,13 @@ class File implements ZipStoreEntryFile
      */
     public function __construct(string $filepath)
     {
-        $this->file = $this->validateFilepath($filepath);
+        $this->fileinfo = $this->validateFilepath($filepath);
     }
 
     public function __serialize()
     {
         $data = [
-            'filepath' => $this->file->getRealPath(),
+            'filepath' => $this->fileinfo->getRealPath(),
         ];
 
         if (isset($this->defaultTimestamp)) {
@@ -44,7 +45,7 @@ class File implements ZipStoreEntryFile
 
     public function __toString(): string
     {
-        return $this->getRealpath();
+        return $this->getIdentifier();
     }
 
     /**
@@ -52,7 +53,7 @@ class File implements ZipStoreEntryFile
      * */
     public function __unserialize(array $data)
     {
-        $this->file = $this->validateFilepath($data['filepath']);
+        $this->fileinfo = $this->validateFilepath($data['filepath']);
 
         foreach (['defaultTimestamp', 'packedCRC32Digest'] as $key) {
             if (in_array($key, $data)) {
@@ -61,10 +62,15 @@ class File implements ZipStoreEntryFile
         }
     }
 
+    public function exists(): bool
+    {
+        return $this->fileinfo->isFile();
+    }
+
     /** @return ($timestamp is true ? int : Carbon) */
     public function getATime(bool $timestamp = false): int|Carbon
     {
-        $time = $this->file->getATime() ?: $this->getDefaultTimestamp();
+        $time = $this->fileinfo->getATime() ?: $this->getDefaultTimestamp();
 
         if ($timestamp) {
             return $time;
@@ -76,7 +82,7 @@ class File implements ZipStoreEntryFile
     /** @return ($timestamp is true ? int : Carbon) */
     public function getCTime(bool $timestamp = false): int|Carbon
     {
-        $time = $this->file->getCTime() ?: $this->getDefaultTimestamp();
+        $time = $this->fileinfo->getCTime() ?: $this->getDefaultTimestamp();
 
         if ($timestamp) {
             return $time;
@@ -87,28 +93,29 @@ class File implements ZipStoreEntryFile
 
     public function getExtension(): string
     {
-        return $this->file->getExtension();
+        return $this->fileinfo->getExtension();
     }
 
     public function getFilename(): string
     {
-        return $this->file->getFilename();
-    }
-
-    public function getFilepath(): string
-    {
-        return $this->file->getRealPath() ?: $this->file->getPathname();
+        return $this->fileinfo->getFilename();
     }
 
     public function getGID(): int
     {
-        return $this->file->getGroup() ?: 1000;
+        return $this->fileinfo->getGroup() ?: 1000;
+    }
+
+    public function getIdentifier(): string
+    {
+        /* @var string */
+        return $this->fileinfo->getRealPath() ?: $this->fileinfo->getPathname();
     }
 
     /** @return ($timestamp is true ? int : Carbon) */
     public function getMTime(bool $timestamp = false): int|Carbon
     {
-        $time = $this->file->getMTime() ?: $this->getDefaultTimestamp();
+        $time = $this->fileinfo->getMTime() ?: $this->getDefaultTimestamp();
 
         if ($timestamp) {
             return $time;
@@ -119,13 +126,13 @@ class File implements ZipStoreEntryFile
 
     public function getMode(): int
     {
-        return $this->file->getPerms() ?: 0100644;
+        return $this->fileinfo->getPerms() ?: 0100644;
     }
 
     public function getPackedCRC32Digest(): string
     {
         if (! isset($this->packedCRC32Digest)) {
-            $digest = hash_file('crc32b', $filepath = $this->getFilepath());
+            $digest = hash_file('crc32b', $filepath = $this->getIdentifier());
 
             if (false === $digest) {
                 throw new Exception(sprintf('Failed to generate a crc-32 digest of file: %s', $filepath));
@@ -137,26 +144,20 @@ class File implements ZipStoreEntryFile
         return $this->packedCRC32Digest;
     }
 
-    public function getRealpath(): string
-    {
-        /* @var string */
-        return $this->file->getRealPath();
-    }
-
     public function getSize(): int
     {
-        return $this->file->getSize() ?: 0;
+        return $this->fileinfo->getSize() ?: 0;
     }
 
     public function getUID(): int
     {
-        return $this->file->getOwner() ?: 1000;
+        return $this->fileinfo->getOwner() ?: 1000;
     }
 
     public function read(int $offset, int $length): false|string
     {
         // @phpstan-ignore argument.type
-        return \file_get_contents($this->getRealpath(), offset: $offset, length: $length);
+        return \file_get_contents($this->getIdentifier(), offset: $offset, length: $length);
     }
 
     private function getDefaultTimestamp(): int
@@ -169,7 +170,7 @@ class File implements ZipStoreEntryFile
         $info = new SplFileInfo($filepath);
 
         if (! $info->isFile() || ! $info->getRealPath()) {
-            throw new Exception(sprintf('Failed to open %s: not a file', $filepath));
+            throw new FileNotFoundException(sprintf('Failed to open %s: not a file', $filepath));
         }
 
         return $info;
