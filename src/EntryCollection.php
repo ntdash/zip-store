@@ -6,7 +6,6 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use Traversable;
-use ZipStore\Supports\EntryArgument;
 
 /**
  * @implements IteratorAggregate<int,Entry>
@@ -50,6 +49,11 @@ class EntryCollection implements Countable, IteratorAggregate
         return new ArrayIterator($this->entries);
     }
 
+    /**
+     * Compute the total size of all entries in the collection.
+     *
+     * @return int Total size of every Entry in the collection; cached after the first computation.
+     */
     public function getSize(): int
     {
         return $this->size ??= array_reduce(
@@ -59,13 +63,18 @@ class EntryCollection implements Countable, IteratorAggregate
         );
     }
 
-
-    private function createEntry(EntryArgument $args): Entry
+    /**
+     * Create an Entry for the given argument positioned at the collection's current EOF offset.
+     *
+     * @param EntryArgument $arg Source descriptor containing the file and entry name.
+     * @return Entry The newly constructed Entry with its offset set to the collection's EOF. 
+     */
+    private function createEntry(EntryArgument $arg): Entry
     {
         return new Entry(
             $this->getEOFOffset(),
-            $args->filepath,
-            $args->entryName
+            $arg->file,
+            $arg->entryName
         );
     }
 }

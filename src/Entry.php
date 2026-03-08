@@ -3,26 +3,28 @@
 namespace ZipStore;
 
 use ZipStore\Contracts\ZipStoreEntryFile;
-use ZipStore\Exceptions\InvalidEntryFileClass;
-use ZipStore\Supports\File;
 use ZipStore\Supports\StringBuffer;
 
 class Entry
 {
-    /** @var class-string<ZipStoreEntryFile> */
-    private static $entryFileClass = File::class;
-
     public readonly string $entryName;
-
-    public readonly ZipStoreEntryFile $file;
 
     public readonly LocalHeader $localHeader;
 
     private int $size;
 
-    public function __construct(public readonly int $offset, string $filepath, ?string $entryName = null)
+    /**
+     * Create a new Entry representing a file within the ZIP at a given archive offset.
+     *
+     * The constructor records the entry's archive offset and associated entry file, sets the entry name
+     * to the provided value or to the file's filename if omitted, and initializes the entry's local header.
+     *
+     * @param int $offset The byte offset of this entry's local header within the ZIP archive.
+     * @param ZipStoreEntryFile $file The underlying entry file providing filename, size and read access.
+     * @param string|null $entryName Optional explicit entry name; when null the file's filename is used.
+     */
+    public function __construct(public readonly int $offset, public readonly ZipStoreEntryFile $file, ?string $entryName = null)
     {
-        $this->file = new self::$entryFileClass($filepath);
 
         $this->entryName = $entryName ?? $this->file->getFilename();
 
@@ -34,6 +36,13 @@ class Entry
         return $this->size ??= $this->file->getSize() + $this->localHeader->getSize();
     }
 
+    /**
+     * Read up to a given number of bytes from this entry starting at an absolute archive offset.
+     *
+     * @param int $bytes Number of bytes to read.
+     * @param int $absOffset Absolute offset within the archive from which to start reading.
+     * @return false|StringBuffer `StringBuffer` containing the assembled bytes (header bytes followed by file bytes) on success, or `false` if the offset is outside the entry or the underlying file read fails.
+     */
     public function read(int $bytes, int $absOffset): false|StringBuffer
     {
         if (($localOffset = $absOffset - $this->offset) < 0) {
@@ -64,26 +73,5 @@ class Entry
         }
 
         return $buffer;
-    }
-
-    /**
-     * @param  class-string  $abstract
-     * @return void
-     */
-    public static function setEntryFileClass(string $abstract)
-    {
-        if (! \is_a($abstract, ZipStoreEntryFile::class, true)) {
-            throw new InvalidEntryFileClass(
-                \sprintf('"%s" does not implement the "%s" interface', $abstract,ZipStoreEntryFile::class)
-            );
-        }
-
-        foreach (['__serialize', '__unserialize'] as $s_method) {
-            if (! \method_exists($abstract, $s_method)) {
-                throw new InvalidEntryFileClass('Missing serialization magic methods');
-            }
-        }
-
-        self::$entryFileClass = $abstract;
     }
 }

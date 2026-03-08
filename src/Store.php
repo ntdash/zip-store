@@ -4,11 +4,10 @@ namespace ZipStore;
 
 use ZipStore\Exceptions\DuplicateEntryException;
 use ZipStore\Exceptions\EntriesOverflowException;
+use ZipStore\Exceptions\FileNotFoundException;
 use ZipStore\Exceptions\FileTooLargeException;
 use ZipStore\Exceptions\InvalidEntryNameException;
-use ZipStore\Exceptions\InvalidFilepathException;
 use ZipStore\Exceptions\ZipStoreException;
-use ZipStore\Supports\EntryArgument;
 
 class Store
 {
@@ -24,13 +23,13 @@ class Store
     /**  max entries count: 65535 */
     public const ENTRIES_LIMIT = 0xFFFF;
 
-    /** max size: 3.75GB */
+    /** max size: 3.75 GiB */
     public const ENTRY_MAX_FILESIZE = 0xF000_0000;
 
     /** placehold, default, ... */
     public const NO_EXTRA = 0x00;
 
-    /** throw an exception entry (i.e: filepath and/or entryName) of one the adding method is invalid */
+    /** throw an exception entry (i.e: identifier and/or entryName) of one the adding method is invalid */
     public const STRICT = 0x80;
 
     private int $dupMode;
@@ -40,6 +39,11 @@ class Store
 
     private bool $strict;
 
+    /**
+     * Initialize a new Store and configure behavior according to the provided options.
+     *
+     * @param int $options Bitmask of option flags that control duplicate-resolution strategy and strict mode. Use class constants such as NO_EXTRA, STRICT, DUP_APPEND_NUM, DUP_OVERWRITE, and DUP_FAILED. Defaults to NO_EXTRA.
+     */
     public function __construct(int $options = self::NO_EXTRA)
     {
         $this->entries = [];
@@ -48,25 +52,27 @@ class Store
     }
 
     /**
-     * @throws InvalidFilepathException
-     * @throws InvalidEntryNameException
-     */
-    public function addFile(string|EntryArgument $filepathOrEntry, ?string $entryName = null): bool
+         * Add a single file entry to the store.
+         *
+         * @param string|EntryArgument $identifierOrEntry A filesystem path to the file or an EntryArgument instance describing the entry.
+         * @param string|null $entryName Optional archive entry name to use when the first argument is a path.
+         * @return bool `true` if the entry was accepted, `false` if the addition failed (when not in strict mode).
+         * @throws FileNotFoundException If a referenced file does not exist.
+         * @throws InvalidEntryNameException If the provided entry name is invalid.
+         */
+    public function addFile(string|EntryArgument $identifierOrEntry, ?string $entryName = null): bool
     {
-        if (is_string($filepathOrEntry)) {
-            $filepath = $filepathOrEntry;
-            $entryName ??= \basename($filepath);
-
-            $filepathOrEntry = new EntryArgument(\compact('entryName', 'filepath'));
+        if (is_string($identifierOrEntry)) {
+            $identifierOrEntry = new EntryArgument($identifierOrEntry, $entryName);
         }
 
-        return $this->addFiles([$filepathOrEntry]);
+        return $this->addFiles([$identifierOrEntry]);
     }
 
     /**
      * @param  array<string|EntryArgument>  $entries
      *
-     * @throws InvalidFilepathException
+     * @throws FileNotFoundException
      * @throws InvalidEntryNameException
      * @throws DuplicateEntryException
      */
@@ -141,6 +147,14 @@ class Store
 
     }
 
+    /**
+     * Resolve a name collision between an existing entry and a new entry according to the store's duplication mode.
+     *
+     * @param EntryArgument $current The existing entry that conflicts with the incoming entry's name.
+     * @param EntryArgument $newValue The incoming entry proposed for addition.
+     * @return EntryArgument The entry that should be stored (may be the incoming entry, a renamed clone, or the existing entry replaced).
+     * @throws DuplicateEntryException If the duplication mode is set to fail on duplicates.
+     */
     private function resolveDuplicatedEntry(EntryArgument $current, EntryArgument $newValue): EntryArgument
     {
 
@@ -151,8 +165,9 @@ class Store
                 $len = \strlen($current->entryName);
 
                 foreach ($this->entries as $entry) {
-                    if (0 == \strncmp($current->entryName, $entry->entryName, $len))
+                    if (0 == \strncmp($current->entryName, $entry->entryName, $len)) {
                         $count++;
+                    }
                 }
 
                 $current = $newValue->clone(entryName: \sprintf(
@@ -171,12 +186,15 @@ class Store
         return $current;
     }
 
+    /**
+     * Ensures the entry's file size does not exceed the store's maximum allowed entry size.
+     *
+     * @param EntryArgument $entry The entry whose file size will be validated.
+     * @throws FileTooLargeException If the entry's file size is greater than self::ENTRY_MAX_FILESIZE.
+     */
     private function validateEntryFileSize(EntryArgument $entry): void
     {
-        \clearstatcache(true, $entry->filepath);
-        $entryFilesize = \filesize($entry->filepath);
-
-        if (false === $entryFilesize || self::ENTRY_MAX_FILESIZE < $entryFilesize) {
+        if (self::ENTRY_MAX_FILESIZE < $entry->file->getSize()) {
             throw new FileTooLargeException;
         }
     }

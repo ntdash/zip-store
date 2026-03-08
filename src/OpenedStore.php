@@ -4,15 +4,15 @@ namespace ZipStore;
 
 use ZipStore\Exceptions\FileTooLargeException;
 use ZipStore\Exceptions\ZipStoreIOException;
-use ZipStore\Supports\EntryArgument;
 use ZipStore\Supports\StringBuffer;
-
 
 class OpenedStore
 {
-    private const DEFAULT_BUFFER_SIZE = 1024 * 512;
+    /** buffer size: 512 KiB */
+    private const DEFAULT_BUFFER_SIZE = 0x8_0000;
 
-    private const MAX_ZIP_FILESIZE = 1024 * 1024 * 1024 * 4;
+    /** max size: 4 GiB */
+    private const MAX_ZIP_FILESIZE = 0x1_0000_0000;
 
     public CentralDirectory $cdir;
 
@@ -64,16 +64,20 @@ class OpenedStore
     }
 
     /**
-     * read $bytes of the virtually packed zip file
-     * from the @seek(ed) offset
+     * Read a chunk of the virtual ZIP starting at the current read position or a provided offset.
      *
-     * @return ($throw is true ? StringBuffer : false|StringBuffer)
+     * Reads up to `$length` bytes from the virtual ZIP stream, aggregating data from entries,
+     * the central directory, and the end-of-central-directory as needed.
+     *
+     * @param int $length Number of bytes to read (absolute value is used).
+     * @param int|null $offset If provided, seeks to this absolute offset before reading.
+     * @param bool $throw If true, throw on underlying entry read failures; otherwise return `false`.
+     * @return StringBuffer|false `StringBuffer` containing up to `$length` bytes, `false` on read failure when `$throw` is `false`.
+     * @throws ZipStoreIOException When `$throw` is `true` and an underlying entry cannot be read.
      */
-    public function read(?int $bytes = null, ?int $offset = null, bool $throw = false): false|StringBuffer
+    public function read(int $length = self::DEFAULT_BUFFER_SIZE, ?int $offset = null, bool $throw = false): false|StringBuffer
     {
-        $bytes ??= self::DEFAULT_BUFFER_SIZE;
-
-        $buffer = new StringBuffer((int) abs($bytes));
+        $buffer = new StringBuffer((int) abs($length));
 
         if (null !== $offset) {
             $this->seek($offset);
