@@ -27,7 +27,7 @@ class LocalFile implements ZipStoreEntryFile
     public function __serialize()
     {
         $data = [
-            'filepath' => $this->fileinfo->getRealPath(),
+            'filepath' => $this->getIdentifier(),
         ];
 
         if (isset($this->defaultTimestamp)) {
@@ -53,11 +53,13 @@ class LocalFile implements ZipStoreEntryFile
     {
         $this->fileinfo = $this->validateFilepath($data['filepath']);
 
-        if (\is_int($data['defaultTimestamp'] ?? null))
+        if (\is_int($data['defaultTimestamp'] ?? null)) {
             $this->defaultTimestamp = $data['defaultTimestamp'];
+        }
 
-        if (\is_string($data['packedCRC32Digest'] ?? null))
+        if (\is_string($data['packedCRC32Digest'] ?? null)) {
             $this->packedCRC32Digest = $data['packedCRC32Digest'];
+        }
     }
 
     public function exists(): bool

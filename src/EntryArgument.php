@@ -22,6 +22,7 @@ class EntryArgument
 
     /**
      * @param  EntryDetails|string  $identifierOrDetails
+     * @param  string|null  $entryName  Ignored when $identifierOrDetails is an array (EntryDetails), which carries, possibly, its own 'entryName' key.
      * @return void
      */
     public function __construct(array|string $identifierOrDetails, ?string $entryName = null)

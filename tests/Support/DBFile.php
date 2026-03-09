@@ -87,7 +87,7 @@ class DBFile implements ZipStoreEntryFile
 
     public function getGID(): int
     {
-        return function_exists("posix_getgid") ? posix_getgid() : 1000;
+        return function_exists('posix_getgid') ? posix_getgid() : 1000;
     }
 
     public function getIdentifier(): string
@@ -123,7 +123,7 @@ class DBFile implements ZipStoreEntryFile
 
     public function getUID(): int
     {
-        return function_exists("posix_getuid") ? posix_getuid(): 1000;
+        return function_exists('posix_getuid') ? posix_getuid() : 1000;
     }
 
     public static function pdo(): \PDO

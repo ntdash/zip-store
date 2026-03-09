@@ -43,15 +43,14 @@ class ZipStoreTest extends TestCase
         );
     }
 
+    /**
+     * @throws FileIntegrityException
+     */
     private function check(OpenedStore $openedStore): bool
     {
         $checker = new ConformityChecker($this->inputHashes, $openedStore);
 
-        try {
-            $checker->check();
-        } catch (FileIntegrityException) {
-            return false;
-        }
+        $checker->check();
 
         return true;
     }

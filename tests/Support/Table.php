@@ -18,6 +18,14 @@ abstract class Table
 
     abstract public function getTable(): string;
 
+    /**
+     * @param  array<int,int>  $options
+     */
+    public function prepareStatement(string $query, array $options = []): \PDOStatement
+    {
+        return $this->db->pdo()->prepare($query, $options);
+    }
+
     protected function wipe(): bool
     {
         $query = "DELETE FROM {$this->getTable()}";
@@ -25,13 +33,5 @@ abstract class Table
         $stmt = $this->db->pdo()->prepare($query);
 
         return $stmt->execute();
-    }
-
-    /**
-     * @param  array<int,int>  $options
-     */
-    public function prepareStatement(string $query, array $options = []): \PDOStatement
-    {
-        return $this->db->pdo()->prepare($query, $options);
     }
 }

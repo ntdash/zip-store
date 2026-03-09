@@ -33,10 +33,13 @@ class EntryCollection implements \Countable, \IteratorAggregate
 
     public function getEOFOffset(): int
     {
-        /** @var null|Entry */
-        $last = $this->entries[\count($this->entries) - 1] ?? null;
+        if (empty($this->entries)) {
+            return 0;
+        }
 
-        return $last?->offset + $last?->getSize();
+        $last = $this->entries[\count($this->entries) - 1];
+
+        return $last->offset + $last->getSize();
     }
 
     public function getIterator(): \Traversable

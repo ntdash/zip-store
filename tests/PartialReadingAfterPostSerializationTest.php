@@ -39,7 +39,7 @@ class PartialReadingAfterPostSerializationTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('Partial reading after deserialiazation')]
+    #[TestDox('Partial reading after deserialization')]
     public function handle(): void
     {
         /** @var OpenedStore */
@@ -94,17 +94,15 @@ class PartialReadingAfterPostSerializationTest extends TestCase
         }
     }
 
+    /**
+     * @throws FileIntegrityException
+     */
     private function postCompressionTask(): bool
     {
-        try {
-            $outputPath = $this->resolveOutputPath();
+        $outputPath = $this->resolveOutputPath();
 
-            $this->deArchiveInto($this->archivePath, $outputPath);
-
-            $this->checkOutputFilesIntegrity($this->inputHashes, $outputPath);
-        } catch (FileIntegrityException) {
-            return false;
-        }
+        $this->deArchiveInto($this->archivePath, $outputPath);
+        $this->checkOutputFilesIntegrity($this->inputHashes, $outputPath);
 
         return true;
     }

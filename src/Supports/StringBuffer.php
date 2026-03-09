@@ -2,7 +2,6 @@
 
 namespace ZipStore\Supports;
 
-
 class StringBuffer implements \Stringable
 {
     public string $content = '';

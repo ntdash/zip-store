@@ -27,7 +27,7 @@ ZipStore focuses on stream-friendly ZIP generation and **does not support**:
 - Encryption
 - Files larger than `3.75 GiB` per entry
 - More than 65,535 entries per archive
-- Archive file larger than `4 GiB` since there is not support for ZIP64 yet
+- Archive file larger than `4 GiB` since there is no support for ZIP64 yet
 
 These limitations are by design to keep the library lightweight and performant. For complex ZIP operations, consider using `php-zip` extension directly.
 
