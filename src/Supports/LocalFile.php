@@ -3,8 +3,6 @@
 namespace ZipStore\Supports;
 
 use Carbon\Carbon;
-use Exception;
-use SplFileInfo;
 use ZipStore\Contracts\ZipStoreEntryFile;
 use ZipStore\Exceptions\FileNotFoundException;
 
@@ -12,14 +10,14 @@ class LocalFile implements ZipStoreEntryFile
 {
     private int $defaultTimestamp;
 
-    private SplFileInfo $fileinfo;
+    private \SplFileInfo $fileinfo;
 
     private string $packedCRC32Digest;
 
     /**
      * @return void
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function __construct(string $filepath)
     {
@@ -49,17 +47,17 @@ class LocalFile implements ZipStoreEntryFile
     }
 
     /**
-     * @param  array{filepath:string,defaultTimestamp:int,packedCRC32Digest:string}  $data
+     * @param  array{filepath:string,defaultTimestamp?:int,packedCRC32Digest?:string}  $data
      * */
     public function __unserialize(array $data)
     {
         $this->fileinfo = $this->validateFilepath($data['filepath']);
 
-        foreach (['defaultTimestamp', 'packedCRC32Digest'] as $key) {
-            if (in_array($key, $data)) {
-                $this->{$key} = $data[$key];
-            }
-        }
+        if (\is_int($data['defaultTimestamp'] ?? null))
+            $this->defaultTimestamp = $data['defaultTimestamp'];
+
+        if (\is_string($data['packedCRC32Digest'] ?? null))
+            $this->packedCRC32Digest = $data['packedCRC32Digest'];
     }
 
     public function exists(): bool
@@ -135,7 +133,7 @@ class LocalFile implements ZipStoreEntryFile
             $digest = hash_file('crc32b', $filepath = $this->getIdentifier());
 
             if (false === $digest) {
-                throw new Exception(sprintf('Failed to generate a crc-32 digest of file: %s', $filepath));
+                throw new \Exception(sprintf('Failed to generate a crc-32 digest of file: %s', $filepath));
             }
 
             $this->packedCRC32Digest = pack('V', hexdec($digest));
@@ -165,9 +163,9 @@ class LocalFile implements ZipStoreEntryFile
         return $this->defaultTimestamp ??= \time();
     }
 
-    private function validateFilepath(string $filepath): SplFileInfo
+    private function validateFilepath(string $filepath): \SplFileInfo
     {
-        $info = new SplFileInfo($filepath);
+        $info = new \SplFileInfo($filepath);
 
         if (! $info->isFile() || ! $info->getRealPath()) {
             throw new FileNotFoundException(sprintf('Failed to open %s: not a file', $filepath));

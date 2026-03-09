@@ -3,9 +3,8 @@
 namespace ZipStore\Contracts;
 
 use Carbon\Carbon;
-use Stringable;
 
-interface ZipStoreEntryFile extends Stringable
+interface ZipStoreEntryFile extends \Stringable
 {
     public function exists(): bool;
 

@@ -87,6 +87,8 @@ class PartialReadingAfterPostSerializationTest extends TestCase
             \fclose($stream);
         }
 
+        \clearstatcache(true, $this->archivePath->getRealPath());
+
         if ($this->archivePath->getSize() !== $toBeReadSize) {
             throw new \Exception('Mismatch between archive size and $toBeRead size');
         }

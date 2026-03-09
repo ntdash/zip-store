@@ -38,8 +38,8 @@ class FileTableRecord
     {
         $query = "SELECT substr(data, :start, :length) as data from {$this->table->getTable()} where id = :id";
 
-        $stmt = $this->table->prepareStatment($query);
-        $stmt->execute(['id' => $this->id, 'offset' => $offset + 1, 'length' => $length]);
+        $stmt = $this->table->prepareStatement($query);
+        $stmt->execute([':id' => $this->id, ':start' => $offset + 1, ':length' => $length]);
 
         $result = $stmt->fetch();
 

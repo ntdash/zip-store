@@ -39,16 +39,16 @@ class DBFactory
 
     private function resolveDBPath(): string
     {
-        $path = rtrim(tests_path(self::DB_RELPATH), DIRECTORY_SEPARATOR);
+        $path = \rtrim(\tests_path(self::DB_RELPATH), DIRECTORY_SEPARATOR);
 
-        if (is_dir($path)) {
-            throw new Exception('Excepted a filepath but a dirpath provided');
+        if (\is_dir($path)) {
+            throw new Exception('Expected a filepath but a dirpath provided');
         }
 
-        $dirpath = dirname($path);
+        $dirpath = \dirname($path);
 
-        if (! is_dir($dirpath)) {
-            $created = mkdir($dirpath, recursive: true, permissions: 0o755);
+        if (! \is_dir($dirpath)) {
+            $created = \mkdir($dirpath, recursive: true, permissions: 0o755);
 
             if (! $created) {
                 throw new \Exception('Failed to created DB directory');

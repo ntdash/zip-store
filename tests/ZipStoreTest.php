@@ -39,7 +39,7 @@ class ZipStoreTest extends TestCase
     {
         $this->assertTrue(
             $this->check($this->store->open()),
-            'Confirmity check failed'
+            'Conformity check failed'
         );
     }
 

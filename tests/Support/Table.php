@@ -26,4 +26,12 @@ abstract class Table
 
         return $stmt->execute();
     }
+
+    /**
+     * @param  array<int,int>  $options
+     */
+    public function prepareStatement(string $query, array $options = []): \PDOStatement
+    {
+        return $this->db->pdo()->prepare($query, $options);
+    }
 }

@@ -16,7 +16,7 @@ class CustomFileHandlerTest extends TestCase
 {
     private FileTable $table;
 
-    protected function setup(): void
+    protected function setUp(): void
     {
         $this->table = FileTable::load();
     }

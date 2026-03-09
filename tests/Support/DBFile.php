@@ -50,17 +50,23 @@ class DBFile implements ZipStoreEntryFile
 
     public function exists(): bool
     {
-        return true;
+        return $this->record->exists();
     }
 
     public function getATime(bool $timestamp = false): int|Carbon
     {
-        return $this->getMTime();
+        return $this->getMTime($timestamp);
     }
 
     public function getCTime(bool $timestamp = false): int|Carbon
     {
-        return Carbon::createFromTimestampUTC(intval($this->record->meta['created_at']));
+        $time = intval($this->record->meta['created_at']);
+
+        if ($timestamp) {
+            return $time;
+        }
+
+        return Carbon::createFromTimestampUTC($time);
     }
 
     public function getExtension(): string
@@ -81,7 +87,7 @@ class DBFile implements ZipStoreEntryFile
 
     public function getGID(): int
     {
-        return posix_getgid();
+        return function_exists("posix_getgid") ? posix_getgid() : 1000;
     }
 
     public function getIdentifier(): string
@@ -91,7 +97,13 @@ class DBFile implements ZipStoreEntryFile
 
     public function getMTime(bool $timestamp = false): int|Carbon
     {
-        return Carbon::createFromTimestampUTC(intval($this->record->meta['updated_at']));
+        $time = intval($this->record->meta['updated_at']);
+
+        if ($timestamp) {
+            return $time;
+        }
+
+        return Carbon::createFromTimestampUTC($time);
     }
 
     public function getMode(): int
@@ -111,7 +123,7 @@ class DBFile implements ZipStoreEntryFile
 
     public function getUID(): int
     {
-        return posix_getuid();
+        return function_exists("posix_getuid") ? posix_getuid(): 1000;
     }
 
     public static function pdo(): \PDO

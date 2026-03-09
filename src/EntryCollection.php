@@ -2,15 +2,10 @@
 
 namespace ZipStore;
 
-use ArrayIterator;
-use Countable;
-use IteratorAggregate;
-use Traversable;
-
 /**
- * @implements IteratorAggregate<int,Entry>
+ * @implements \IteratorAggregate<int,Entry>
  */
-class EntryCollection implements Countable, IteratorAggregate
+class EntryCollection implements \Countable, \IteratorAggregate
 {
     /**
      * @var list<Entry>
@@ -44,9 +39,9 @@ class EntryCollection implements Countable, IteratorAggregate
         return $last?->offset + $last?->getSize();
     }
 
-    public function getIterator(): Traversable
+    public function getIterator(): \Traversable
     {
-        return new ArrayIterator($this->entries);
+        return new \ArrayIterator($this->entries);
     }
 
     public function getSize(): int

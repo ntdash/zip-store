@@ -45,7 +45,6 @@ class Entry
             /* re-adjust local offset */
             $localOffset -= $this->localHeader->getSize();
 
-            // $read = \file_get_contents($this->file->getRealpath(), offset: $localOffset, length: $leftSize);
             $read = $this->file->read($localOffset, $leftSize);
 
             if (false === $read) {

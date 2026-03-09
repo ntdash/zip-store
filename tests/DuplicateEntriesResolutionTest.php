@@ -153,6 +153,8 @@ class DuplicateEntriesResolutionTest extends TestCase
      */
     private function thrownTestInputs(): array
     {
+        $inputs = [];
+
         $dup_name = 'ename';
         $filepath = \tests_path('_data/input/map.json');
 

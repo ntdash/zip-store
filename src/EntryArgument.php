@@ -28,15 +28,15 @@ class EntryArgument
     {
         if (\is_string($identifierOrDetails)) {
             $this->file = new self::$entryFileClass($identifierOrDetails);
-            $this->entryName = $entryName ?? \basename($this->file->getFilename());
+            $this->entryName = $entryName ?? $this->file->getFilename();
 
         } else {
             if (! \is_string($identifierOrDetails['identifier'] ?? null)) {
-                throw new FileNotFoundException('wrong or missing identifier argument');
+                throw new \InvalidArgumentException('wrong or missing identifier argument');
             }
 
             $this->file = new self::$entryFileClass($identifierOrDetails['identifier']);
-            $this->entryName = $identifierOrDetails['entryName'] ?? \basename($this->file->getFilename());
+            $this->entryName = $identifierOrDetails['entryName'] ?? $this->file->getFilename();
         }
     }
 
@@ -86,7 +86,7 @@ class EntryArgument
             throw new FileNotFoundException;
         }
 
-        if (false !== \strpos($this->entryName, DIRECTORY_SEPARATOR)) {
+        if (false !== \strpos($this->entryName, '/')) {
             throw new InvalidEntryNameException;
         }
     }

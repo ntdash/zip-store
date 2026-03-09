@@ -24,7 +24,7 @@ trait HasStoreTestUtilities
 
         /** @var \SplFileInfo $entry */
         foreach ($iter as $entry) {
-            if (false == $entry->isFile()) {
+            if (false === $entry->isFile()) {
                 continue;
             }
 
@@ -70,7 +70,7 @@ trait HasStoreTestUtilities
             throw new \Exception('$dirpath is not a directory path');
         }
 
-        $process = new Process(['/usr/bin/rm', '-rf', $dirpath]);
+        $process = new Process(['/usr/bin/sh', '-c', "rm -rf {$dirpath}/*"]);
 
         $exitCode = $process->run();
 
@@ -105,7 +105,7 @@ trait HasStoreTestUtilities
 
         foreach ($filepaths as $filepath) {
 
-            $hashed_value = hash_file('sha256', $filepath);
+            $hashed_value = \hash_file('sha256', $filepath);
 
             if (false !== $hashed_value) {
                 $output[\basename($filepath)] = $hashed_value;
@@ -117,7 +117,7 @@ trait HasStoreTestUtilities
 
     private function resolveArchivePath(): string
     {
-        $path = \tests_path(valueOf(Dirpath::ARCHIVE));
+        $path = \tests_path(\valueOf(Dirpath::ARCHIVE));
         $dirpath = \dirname($path);
 
         if (! \is_dir($dirpath)) {
@@ -133,14 +133,14 @@ trait HasStoreTestUtilities
 
     private function resolveOutputPath(): string
     {
-        $path = \tests_path(valueOf(Dirpath::OUTPUT));
+        $path = \tests_path(\valueOf(Dirpath::OUTPUT));
 
         if (\is_file($path)) {
             throw new \Exception('Expect output to be a directory path, but file path given');
         }
 
         if (! \file_exists($path)) {
-            $created = \mkdir($path, recursive: true, permissions: 0o755);
+            $created = \mkdir($path, 0o755, true);
 
             if (! $created) {
                 throw new \Exception('Failed to resolve output directory path');
@@ -181,7 +181,7 @@ trait HasStoreTestUtilities
         \clearstatcache(true, $archivePath);
 
         if ($openedStore->getSize() !== \filesize($archivePath)) {
-            throw new \Exception('Final size of the resulting file is not equal to the size of the virual one');
+            throw new \Exception('Final size of the resulting file is not equal to the size of the virtual one');
         }
 
     }

@@ -2,9 +2,7 @@
 
 namespace ZipStore\Supports;
 
-use Stringable;
-
-class ZipGPBitsGenerator implements Stringable
+class ZipGPBitsGenerator implements \Stringable
 {
     public function __construct(
         public readonly bool $utf8 = true

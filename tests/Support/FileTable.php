@@ -47,12 +47,13 @@ class FileTable extends Table
     }
 
     /**
-     * @param  array<string>  $columnExcluded
+     * @param  array<string>  $excludedColumns
      * @return false|array<string,mixed>
      */
-    public function getRowWithout(int $id, array $columnExcluded): false|array
+    public function getRowWithout(int $id, array $excludedColumns): false|array
     {
-        $resolveColumns = array_diff($this->getColumns(), $columnExcluded);
+        $allowedColumns = $this->getColumns();
+        $resolveColumns = array_diff($allowedColumns, array_intersect($allowedColumns, $excludedColumns));
         $query = sprintf(
             'SELECT %s FROM %s WHERE id = :id',
             implode(',', $resolveColumns),
@@ -76,9 +77,9 @@ class FileTable extends Table
         $query = "SELECT id FROM {$this->getTable()} WHERE id = :id";
 
         $stmt = $this->db->pdo()->prepare($query);
-        $result = $stmt->execute([':id' => $id]);
+        $stmt->execute([':id' => $id]);
 
-        return (bool) $result;
+        return (bool) $stmt->fetch();
     }
 
     public static function load(): self
@@ -97,14 +98,6 @@ class FileTable extends Table
     public static function new(): self
     {
         return new self(new DBFactory);
-    }
-
-    /**
-     * @param  array<int,int>  $options
-     */
-    public function prepareStatment(string $query, array $options = []): \PDOStatement
-    {
-        return $this->db->pdo()->prepare($query, $options);
     }
 
     protected function createTable(): void
@@ -132,11 +125,6 @@ class FileTable extends Table
         $this->wipe();
 
         foreach ($this->getRawData() as $label => $details) {
-            $details ??= [
-                'ext' => 'txt',
-                'content' => sprintf('%s content', $label),
-            ];
-
             if (null == $details) {
                 break;
             }

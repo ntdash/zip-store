@@ -27,7 +27,7 @@ ZipStore focuses on stream-friendly ZIP generation and **does not support**:
 - Encryption
 - Files larger than `3.75 GiB` per entry
 - More than 65,535 entries per archive
-- Archive file larger that `4 GiB` since there is not support for ZIP64 yet
+- Archive file larger than `4 GiB` since there is not support for ZIP64 yet
 
 These limitations are by design to keep the library lightweight and performant. For complex ZIP operations, consider using `php-zip` extension directly.
 
@@ -78,7 +78,7 @@ $buffer = $openedStore->read($bytes);
 // Read with specific offset
 $buffer = $openedStore->read(length: 1024 * 1024 * 4, offset: 1024);
 
-// Default read size is 512 KiB — totally arbitrary value, does not provider any performance gain
+// Default read size is 512 KiB 
 $buffer = $openedStore->read(offset: 2048);
 
 // Check if end of file
@@ -264,7 +264,7 @@ use ZipStore\EntryArgument;
 
 
 // First, define your custom file handler
-class CustomEntryFile extends ZipStoreEntryFile {
+class CustomEntryFile implements ZipStoreEntryFile {
 
     public function __construct(private readonly int $id) {
        // extra ops (eg. validation, ...)
