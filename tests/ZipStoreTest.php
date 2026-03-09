@@ -7,9 +7,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
 use Tests\Concerns\HasStoreTestUtilities;
-use Tests\Exceptions\FileIntegrityException;
 use Tests\Support\ConformityChecker;
-use ZipStore\OpenedStore;
 use ZipStore\Store;
 
 #[CoversClass(Store::class)]
@@ -37,21 +35,10 @@ class ZipStoreTest extends TestCase
     #[TestDox('Conformity check with official software output')]
     public function handle(): void
     {
-        $this->assertTrue(
-            $this->check($this->store->open()),
-            'Conformity check failed'
-        );
-    }
+        $this->expectNotToPerformAssertions();
 
-    /**
-     * @throws FileIntegrityException
-     */
-    private function check(OpenedStore $openedStore): bool
-    {
-        $checker = new ConformityChecker($this->inputHashes, $openedStore);
+        $checker = new ConformityChecker($this->inputHashes, $this->store->open());
 
         $checker->check();
-
-        return true;
     }
 }

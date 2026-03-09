@@ -19,7 +19,7 @@ abstract class Table
     abstract public function getTable(): string;
 
     /**
-     * @param  array<int,int>  $options
+     * @param  array<int,mixed>  $options
      */
     public function prepareStatement(string $query, array $options = []): \PDOStatement
     {

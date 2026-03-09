@@ -74,7 +74,7 @@ class DBFile implements ZipStoreEntryFile
         $ext = new MimeTypes()->getExtension($this->record->meta['mime']);
 
         if (null === $ext) {
-            throw new \Exception('Failed to retrieve extention');
+            throw new \Exception('Failed to retrieve extension');
         }
 
         return $ext;
@@ -108,7 +108,7 @@ class DBFile implements ZipStoreEntryFile
 
     public function getMode(): int
     {
-        return 0o644;
+        return 0o0100644;
     }
 
     public function getPackedCRC32Digest(): string

@@ -47,10 +47,10 @@ class PartialReadingAfterPostSerializationTest extends TestCase
 
         $this->writeStoreInto($openedStore, $this->archivePath, append: true);
 
-        $this->assertTrue(
-            $this->postCompressionTask(),
-            'Output files integrity check failed'
-        );
+        $outputPath = $this->resolveOutputPath();
+
+        $this->deArchiveInto($this->archivePath, $outputPath);
+        $this->checkOutputFilesIntegrity($this->inputHashes, $outputPath);
     }
 
     private function partialRead(OpenedStore $openedStore): void
@@ -92,18 +92,5 @@ class PartialReadingAfterPostSerializationTest extends TestCase
         if ($this->archivePath->getSize() !== $toBeReadSize) {
             throw new \Exception('Mismatch between archive size and $toBeRead size');
         }
-    }
-
-    /**
-     * @throws FileIntegrityException
-     */
-    private function postCompressionTask(): bool
-    {
-        $outputPath = $this->resolveOutputPath();
-
-        $this->deArchiveInto($this->archivePath, $outputPath);
-        $this->checkOutputFilesIntegrity($this->inputHashes, $outputPath);
-
-        return true;
     }
 }

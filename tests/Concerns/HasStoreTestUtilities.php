@@ -14,6 +14,8 @@ trait HasStoreTestUtilities
 
     /**
      * @param  array<string,string>  $inputHashes
+     *
+     * @throws FileIntegrityException
      */
     private function checkOutputFilesIntegrity(array $inputHashes, string $output): void
     {
