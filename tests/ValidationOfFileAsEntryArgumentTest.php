@@ -6,8 +6,8 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
+use ZipStore\Exceptions\FileNotFoundException;
 use ZipStore\Exceptions\InvalidEntryNameException;
-use ZipStore\Exceptions\InvalidFilepathException;
 use ZipStore\Store;
 
 #[CoversClass(Store::class)]
@@ -48,7 +48,7 @@ class ValidationOfFileAsEntryArgumentTest extends TestCase
 
         $this->assertFileDoesNotExist($filepath, 'File should not exist');
 
-        $this->expectException(InvalidFilepathException::class);
+        $this->expectException(FileNotFoundException::class);
 
         $this->store->addFile($filepath);
     }

@@ -1,3 +1,4 @@
 #! /usr/bin/env bash
 
-./vendor/bin/phpunit --colors=always $@
+# unlimited memory is necessary for Store max entries test
+php -d memory_limit=-1 ./vendor/bin/phpunit --colors=always "$@"

@@ -4,15 +4,15 @@ namespace ZipStore;
 
 use ZipStore\Exceptions\FileTooLargeException;
 use ZipStore\Exceptions\ZipStoreIOException;
-use ZipStore\Supports\EntryArgument;
 use ZipStore\Supports\StringBuffer;
-
 
 class OpenedStore
 {
-    private const DEFAULT_BUFFER_SIZE = 1024 * 512;
+    /** buffer size: 512 KiB */
+    private const DEFAULT_BUFFER_SIZE = 0x8_0000;
 
-    private const MAX_ZIP_FILESIZE = 1024 * 1024 * 1024 * 4;
+    /** max size: 4 GiB */
+    private const MAX_ZIP_FILESIZE = 0x1_0000_0000;
 
     public CentralDirectory $cdir;
 
@@ -69,11 +69,9 @@ class OpenedStore
      *
      * @return ($throw is true ? StringBuffer : false|StringBuffer)
      */
-    public function read(?int $bytes = null, ?int $offset = null, bool $throw = false): false|StringBuffer
+    public function read(int $length = self::DEFAULT_BUFFER_SIZE, ?int $offset = null, bool $throw = false): false|StringBuffer
     {
-        $bytes ??= self::DEFAULT_BUFFER_SIZE;
-
-        $buffer = new StringBuffer((int) abs($bytes));
+        $buffer = new StringBuffer((int) abs($length));
 
         if (null !== $offset) {
             $this->seek($offset);

@@ -16,41 +16,63 @@ class LimitTest extends TestCase
 {
     use HasFiles;
 
+    /** @var array<array{'stream':resource,'filepath':string}> */
+    private array $files = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->files as $file) {
+            if (\is_resource($file['stream'])) {
+                \fclose($file['stream']);
+            }
+
+            if (\is_file($file['filepath'])) {
+                \unlink($file['filepath']);
+            }
+        }
+    }
+
     #[Test]
-    #[TestDox("adding large file exceeding set limit should failed")]
+    #[TestDox('Adding large file exceeding set limit should fail')]
     public function handle_large_entry_file(): void
     {
-        [$stream, $filepath] = $this->createTempFile('both');
+        $this->files[] = $file = $this->createTempFile('both');
 
         $exceedingLimit = (int) (Store::ENTRY_MAX_FILESIZE + 100);
 
-        if (false === \ftruncate($stream, $exceedingLimit)) {
-            throw new \Exception('failed to create a big file exceeding the limit size');
+        if (false === \ftruncate($file['stream'], $exceedingLimit)) {
+            throw new \Exception('Failed to create a big file exceeding the limit size');
         }
+
+        \clearstatcache(true, $file['filepath']);
 
         $store = new Store(Store::STRICT);
 
         $this->expectException(FileTooLargeException::class);
 
-        $store->addFile($filepath);
+        $store->addFile($file['filepath']);
     }
 
     #[Test]
-    #[TestDox("adding big files that result into store size exceeding the set limit should failed")]
+    #[TestDox('Adding big files that result into store size exceeding the set limit should fail')]
     public function handle_large_store(): void
     {
-        [$stream, $filepath] = $this->createTempFile('both');
-        [$stream2, $filepath2] = $this->createTempFile('both');
+        $this->files[] = $file1 = $this->createTempFile('both');
+        $this->files[] = $file2 = $this->createTempFile('both');
 
         $limit = Store::ENTRY_MAX_FILESIZE;
 
-        foreach([$stream, $stream2] as $carry)
-            if (false === ftruncate($carry, $limit))
-                throw new \Exception("failed to create a big file");
+        foreach ([$file1, $file2] as $carry) {
+            if (false === \ftruncate($carry['stream'], $limit)) {
+                throw new \Exception('failed to create a big file');
+            }
+
+            \clearstatcache(true, $carry['filepath']);
+        }
 
         $store = new Store(Store::STRICT);
 
-        $store->addFiles([$filepath, $filepath2]);
+        $store->addFiles([$file1['filepath'], $file2['filepath']]);
 
         $this->expectException(FileTooLargeException::class);
 
@@ -58,7 +80,7 @@ class LimitTest extends TestCase
     }
 
     #[Test]
-    #[TestDox("adding more files than the set limit should failed")]
+    #[TestDox('Adding more files than the set limit should fail')]
     public function handle_max_entries(): void
     {
         $store = new Store(Store::STRICT);

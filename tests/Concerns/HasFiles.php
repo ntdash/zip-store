@@ -6,47 +6,55 @@ trait HasFiles
 {
     /**
      * @param  'both'|'resource'|'filepath'  $returnMode
-     * @return ($returnMode is 'both' ? array{0:resource,1:string} : ($returnMode is 'filepath' ? string : resource))
+     * @return ($returnMode is 'both' ? array{'stream':resource,'filepath':string} : ($returnMode is 'filepath' ? string : resource))
      *
      * @throws \Exception
      */
     private function createTempFile(string $returnMode): mixed
     {
-        $handle = \tmpfile();
+        $stream = \tmpfile();
         $filepath = false;
 
-        if (!\is_resource($handle)) {
+        if (! \is_resource($stream)) {
             throw new \Exception('tmpfile error');
         }
 
         switch ($returnMode) {
             case 'filepath':
             case 'both':
-                $details = \stream_get_meta_data($handle);
+                $details = \stream_get_meta_data($stream);
 
                 if (! isset($details['uri']) || ! \is_file($details['uri']) || ! ($filepath = \realpath($details['uri']))) {
                     throw new \Exception('failed to obtain @tmpfile filepath');
                 }
 
-                return 'filepath' == $returnMode ? $filepath : [$handle, $filepath];
+                return 'filepath' == $returnMode ? $filepath : compact('stream', 'filepath');
         }
 
-        return $handle;
+        return $stream;
     }
 
     /**
-     * @return array<string>
+     * @return list<string>
      */
-    private function getFiles(string $path, bool $allow_empty = false): array
+    private function getFiles(string $path, bool $allow_empty = false): mixed
     {
-        $files = \glob($path.'/*');
+        $entries = \glob($path.'/*');
 
-        if (false === $files) {
+        if (false === $entries) {
             throw new \Exception('glob error');
-        } elseif (empty($files)) {
-            if ($allow_empty) {
-                return [];
+        }
+
+        /** @var list<string> */
+        $files = [];
+
+        foreach ($entries as $entry) {
+            if (\is_file($entry)) {
+                $files[] = $entry;
             }
+        }
+
+        if (empty($files) && ! $allow_empty) {
             throw new \Exception('Files not found');
         }
 
@@ -54,9 +62,9 @@ trait HasFiles
     }
 
     /**
-     * @return array<string>
+     * @return list<string>
      */
-    private function getInputsFiles(): array
+    private function getInputsFiles(): mixed
     {
         static $files;
 

@@ -2,10 +2,7 @@
 
 namespace ZipStore\Supports;
 
-use Exception;
-use Stringable;
-
-class StringBuffer implements Stringable
+class StringBuffer implements \Stringable
 {
     public string $content = '';
 
@@ -15,7 +12,7 @@ class StringBuffer implements Stringable
     public function __construct(public readonly int $limit)
     {
         if ($limit < 0) {
-            throw new Exception('Negative size buffer not supported');
+            throw new \InvalidArgumentException('Negative size buffer not supported');
         }
     }
 

@@ -2,16 +2,10 @@
 
 namespace ZipStore;
 
-use ArrayIterator;
-use Countable;
-use IteratorAggregate;
-use Traversable;
-use ZipStore\Supports\EntryArgument;
-
 /**
- * @implements IteratorAggregate<int,Entry>
+ * @implements \IteratorAggregate<int,Entry>
  */
-class EntryCollection implements Countable, IteratorAggregate
+class EntryCollection implements \Countable, \IteratorAggregate
 {
     /**
      * @var list<Entry>
@@ -39,15 +33,18 @@ class EntryCollection implements Countable, IteratorAggregate
 
     public function getEOFOffset(): int
     {
-        /** @var null|Entry */
-        $last = $this->entries[\count($this->entries) - 1] ?? null;
+        if (empty($this->entries)) {
+            return 0;
+        }
 
-        return $last?->offset + $last?->getSize();
+        $last = $this->entries[\count($this->entries) - 1];
+
+        return $last->offset + $last->getSize();
     }
 
-    public function getIterator(): Traversable
+    public function getIterator(): \Traversable
     {
-        return new ArrayIterator($this->entries);
+        return new \ArrayIterator($this->entries);
     }
 
     public function getSize(): int
@@ -59,13 +56,12 @@ class EntryCollection implements Countable, IteratorAggregate
         );
     }
 
-
-    private function createEntry(EntryArgument $args): Entry
+    private function createEntry(EntryArgument $arg): Entry
     {
         return new Entry(
             $this->getEOFOffset(),
-            $args->filepath,
-            $args->entryName
+            $arg->file,
+            $arg->entryName
         );
     }
 }

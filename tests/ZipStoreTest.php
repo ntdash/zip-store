@@ -3,20 +3,27 @@
 namespace Tests;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\TestCase;
-use Tests\Concerns\HasTestUtilities;
+use Tests\Concerns\HasStoreTestUtilities;
+use Tests\Support\ConformityChecker;
 use ZipStore\Store;
 
 #[CoversClass(Store::class)]
 class ZipStoreTest extends TestCase
 {
-    use HasTestUtilities;
+    use HasStoreTestUtilities;
+
+    /** @var array<string,string> */
+    private array $inputHashes;
 
     private Store $store;
 
     protected function setUp(): void
     {
         $this->store = new Store;
+        $this->inputHashes = $this->fillStoreWithTestFiles($this->store);
     }
 
     protected function tearDown(): void
@@ -24,10 +31,14 @@ class ZipStoreTest extends TestCase
         unset($this->store);
     }
 
-    public function test_conformity_with_official_software_output(): void
+    #[Test]
+    #[TestDox('Conformity check with official software output')]
+    public function handle(): void
     {
-        $input_hashes = $this->addInputFilesIntoStore($this->store);
+        $this->expectNotToPerformAssertions();
 
-        $this->check_conformity($input_hashes, $this->store->open());
+        $checker = new ConformityChecker($this->inputHashes, $this->store->open());
+
+        $checker->check();
     }
 }
