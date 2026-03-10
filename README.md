@@ -1,6 +1,6 @@
-# ZIP Store
+# ZIPStore
 
-A lightweight PHP library for creating and streaming virtual ZIP archives on-the-fly without consuming disk space. Perfect for constraint environments where storage is limited.
+A PHP library for generating and streaming virtual ZIP archives on-the-fly without consuming disk space. Perfect for constraint environments where storage is limited.
 
 ## Overview
 
