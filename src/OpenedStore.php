@@ -63,6 +63,11 @@ class OpenedStore
         return $this->size ??= $entriesSize + $cdSize + $eocdSize;
     }
 
+    public function passthru(): void
+    {
+        $this->writeTo('php://output', true);
+    }
+
     /**
      * read $bytes of the virtually packed zip file
      * from the @seek(ed) offset
@@ -162,6 +167,43 @@ class OpenedStore
         $this->readBytes = $offset;
 
         return 0;
+    }
+
+    public function writeTo(string $path, bool $resetOffset = true): void
+    {
+        $stream = \fopen($path, 'w');
+
+        if (! $stream) {
+            throw new \Exception("Failed to open {$path}");
+        }
+
+        try {
+            $this->writeToStream($stream, $resetOffset);
+        } finally {
+            \fclose($stream);
+        }
+    }
+
+    /**
+     * @param  resource  $stream
+     * @return void
+     */
+    public function writeToStream(mixed $stream, bool $resetOffset = false)
+    {
+        if ($resetOffset) {
+            $this->seek(0);
+        }
+
+        while (! $this->eof()) {
+            $buffer = $this->read(throw: true);
+            $written = \fwrite($stream, $buffer, $buffer->size);
+
+            if ($written !== $buffer->size) {
+                throw new \Exception('Failed to write buffer into stream');
+            }
+        }
+
+        \fflush($stream);
     }
 
     private function validateFilesize(): void

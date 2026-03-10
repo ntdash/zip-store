@@ -1,6 +1,6 @@
 # ZIP Store
 
-A lightweight PHP library for creating and streaming virtual ZIP archives on-the-fly without consuming significant disk space. Perfect for constraint environments where storage is limited.
+A lightweight PHP library for creating and streaming virtual ZIP archives on-the-fly without consuming disk space. Perfect for constraint environments where storage is limited.
 
 ## Overview
 
@@ -127,9 +127,7 @@ header('Content-Type: application/zip');
 header('Content-Disposition: attachment; filename="archive.zip"');
 header('Content-Length: ' . $opened->getSize());
 
-while (!$opened->eof()) {
-    echo $opened->read();
-}
+$opened->passthru();
 ```
 
 ## Advanced Features
@@ -233,10 +231,7 @@ header('Content-Disposition: attachment; filename="download.zip"');
 header('Content-Length: ' . $opened->getSize());
 header('Cache-Control: public, must-revalidate');
 
-while (!$opened->eof()) {
-    echo $opened->read();
-    flush();
-}
+$opened->passthru();
 ```
 
 ### Backup Multiple Files
@@ -251,8 +246,7 @@ foreach (glob('/data/backups/*.log') as $logFile) {
 
 $opened = $store->open();
 
-while(!$opened->eof())
-    fwrite($stream, $opened->read());
+$opened->writeToStream($stream, resetOffset: true);
 ```
 
 ### ZIP from Database BLOBs
@@ -303,9 +297,9 @@ header('Content-Type: application/zip');
 header('Content-Disposition: attachment; filename="database-export.zip"');
 header('Content-Length: ' . $opened->getSize());
 
-while (!$opened->eof()) {
-    echo $opened->read();
-}
+
+// equivalent (current internal) of OpenedStore@passthru() 
+$opened->writeTo(path: "php://output", resetOffset: true);
 ```
 
 ## License

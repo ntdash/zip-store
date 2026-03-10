@@ -161,21 +161,7 @@ trait HasStoreTestUtilities
         }
 
         try {
-            while (true) {
-                $buffer = $openedStore->read(throw: true);
-
-                if ($buffer->isEmpty()) {
-                    break;
-                }
-
-                $written = \fwrite($stream, $buffer, $buffer->size);
-
-                if ($written !== $buffer->size) {
-                    throw new \Exception('Failed to write buffer into archive file');
-                }
-            }
-
-            \fflush($stream);
+           $openedStore->writeToStream($stream, false) ;
         } finally {
             \fclose($stream);
         }
