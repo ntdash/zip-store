@@ -20,7 +20,7 @@ class OpenedStore
 
     public EndOfCentralDirectory $eocdir;
 
-    private int $readBytes;
+    private int $offset;
 
     private int $size;
 
@@ -30,7 +30,7 @@ class OpenedStore
      */
     public function __construct(array $entries)
     {
-        $this->readBytes = 0;
+        $this->offset = 0;
         $this->entries = new EntryCollection($entries);
 
         $this->cdir = new CentralDirectory(
@@ -47,7 +47,7 @@ class OpenedStore
 
     public function eof(): bool
     {
-        return $this->getSize() === $this->readBytes;
+        return $this->getSize() === $this->offset;
     }
 
     public function getSize(): int
@@ -82,11 +82,11 @@ class OpenedStore
             $this->seek($offset);
         }
 
-        $offset = $this->readBytes;
+        $offset = $this->offset;
 
         /* fetch bytes */
         /* from entries if $offset < $entriesSize */
-        if ($this->readBytes < $this->entries->getSize()) {
+        if ($this->offset < $this->entries->getSize()) {
 
             foreach ($this->entries as $entry) {
                 /* skip if not in range */
@@ -140,7 +140,7 @@ class OpenedStore
         }
 
         /* adjust offset */
-        $this->readBytes += $buffer->size;
+        $this->offset += $buffer->size;
 
         return $buffer;
     }
@@ -151,7 +151,7 @@ class OpenedStore
     public function seek(int $offset, int $whence = SEEK_SET): int
     {
         $offset += match ($whence) {
-            SEEK_CUR => $this->readBytes,
+            SEEK_CUR => $this->offset,
             SEEK_END => $this->getSize(),
             default => 0,
         };
@@ -164,7 +164,7 @@ class OpenedStore
             $offset = $this->getSize();
         }
 
-        $this->readBytes = $offset;
+        $this->offset = $offset;
 
         return 0;
     }
