@@ -2,6 +2,30 @@
 
 A PHP library for generating and streaming virtual ZIP archives on-the-fly without consuming disk space. Perfect for constraint environments where storage is limited.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Important Limitations](#important-limitations)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [Basic Usage](#basic-usage)
+  - [Advanced Reading](#advanced-reading)
+  - [Adding Files with Custom Names](#adding-files-with-custom-names)
+  - [Handling Duplicates](#handling-duplicates)
+  - [Stream to Output](#stream-to-output)
+- [Advanced Features](#advanced-features)
+  - [Custom Entry File Handlers](#custom-entry-file-handlers)
+  - [Seeking Behavior](#seeking-behavior)
+- [Configuration Options](#configuration-options)
+- [Architecture](#architecture)
+- [Examples](#examples)
+  - [Simple File Download Server](#simple-file-download-server)
+  - [Backup Logs Files](#backup-logs-files)
+  - [ZIP From Database BLOBs](#zip-from-database-blobs)
+- [License](#license)
+
 ## Overview
 
 **ZipStore** enables you to add files to a virtual ZIP store and then read from it as if it were a native file resource, using familiar `seek()` and `read()` operations. The library generates ZIP file components on-demand while reading file contents live, making it ideal for serving large file downloads with minimal memory and disk overhead.
@@ -237,7 +261,7 @@ header('Cache-Control: public, must-revalidate');
 $opened->passthru();
 ```
 
-### Backup Multiple Files
+### Backup Logs Files
 
 ```php
 $store = new Store();
@@ -252,7 +276,7 @@ $opened = $store->open();
 $opened->writeToStream($stream, resetOffset: true);
 ```
 
-### ZIP from Database BLOBs
+### ZIP From Database BLOBs
 
 ```php
 use ZipStore\Entry;
