@@ -9,9 +9,9 @@ class StringBuffer implements \Stringable
     /** @var int<0,max> */
     public int $size = 0;
 
-    public function __construct(public readonly int $limit)
+    public function __construct(public readonly int $capacity)
     {
-        if ($limit < 0) {
+        if ($capacity < 0) {
             throw new \InvalidArgumentException('Negative size buffer not supported');
         }
     }
@@ -28,17 +28,17 @@ class StringBuffer implements \Stringable
 
     public function isFull(): bool
     {
-        return $this->limit === $this->size;
+        return $this->capacity === $this->size;
     }
 
     public function leftSize(): int
     {
-        return $this->limit - $this->size;
+        return $this->capacity - $this->size;
     }
 
     public function write(string $content): int
     {
-        $content = \substr($content, 0, $this->limit - $this->size);
+        $content = \substr($content, 0, $this->capacity - $this->size);
         $toWrite = \strlen($content);
 
         $this->size += $toWrite;

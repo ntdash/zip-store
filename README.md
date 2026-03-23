@@ -1,6 +1,30 @@
-# ZIP Store
+# ZIPStore
 
-A lightweight PHP library for creating and streaming virtual ZIP archives on-the-fly without consuming significant disk space. Perfect for constraint environments where storage is limited.
+A PHP library for generating and streaming virtual ZIP archives on-the-fly without consuming disk space. Perfect for constraint environments where storage is limited.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Important Limitations](#important-limitations)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+  - [Basic Usage](#basic-usage)
+  - [Advanced Reading](#advanced-reading)
+  - [Adding Files with Custom Names](#adding-files-with-custom-names)
+  - [Handling Duplicates](#handling-duplicates)
+  - [Stream to Output](#stream-to-output)
+- [Advanced Features](#advanced-features)
+  - [Custom Entry File Handlers](#custom-entry-file-handlers)
+  - [Seeking Behavior](#seeking-behavior)
+- [Configuration Options](#configuration-options)
+- [Architecture](#architecture)
+- [Examples](#examples)
+  - [Simple File Download Server](#simple-file-download-server)
+  - [Backup Logs Files](#backup-logs-files)
+  - [ZIP From Database BLOBs](#zip-from-database-blobs)
+- [License](#license)
 
 ## Overview
 
@@ -70,6 +94,9 @@ $bytes = 1024 * 1024 * 4; // 4 MiB
 
 $openedStore->seek($offset);
 $buffer = $openedStore->read($bytes);
+
+// current offset after seek and read
+echo $openedStore->tell();  // 4194304 
 ```
 
 ### Advanced Reading
@@ -127,9 +154,7 @@ header('Content-Type: application/zip');
 header('Content-Disposition: attachment; filename="archive.zip"');
 header('Content-Length: ' . $opened->getSize());
 
-while (!$opened->eof()) {
-    echo $opened->read();
-}
+$opened->passthru();
 ```
 
 ## Advanced Features
@@ -233,13 +258,10 @@ header('Content-Disposition: attachment; filename="download.zip"');
 header('Content-Length: ' . $opened->getSize());
 header('Cache-Control: public, must-revalidate');
 
-while (!$opened->eof()) {
-    echo $opened->read();
-    flush();
-}
+$opened->passthru();
 ```
 
-### Backup Multiple Files
+### Backup Logs Files
 
 ```php
 $store = new Store();
@@ -251,11 +273,10 @@ foreach (glob('/data/backups/*.log') as $logFile) {
 
 $opened = $store->open();
 
-while(!$opened->eof())
-    fwrite($stream, $opened->read());
+$opened->writeToStream($stream, resetOffset: true);
 ```
 
-### ZIP from Database BLOBs
+### ZIP From Database BLOBs
 
 ```php
 use ZipStore\Entry;
@@ -303,9 +324,9 @@ header('Content-Type: application/zip');
 header('Content-Disposition: attachment; filename="database-export.zip"');
 header('Content-Length: ' . $opened->getSize());
 
-while (!$opened->eof()) {
-    echo $opened->read();
-}
+
+// equivalent (current internal) of OpenedStore@passthru() 
+$opened->writeTo(path: "php://output", resetOffset: true);
 ```
 
 ## License

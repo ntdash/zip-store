@@ -15,6 +15,7 @@ phpunit.xml export-ignore
 phpstan.neon export-ignore
 
 .gitignore export-ignore
+.php-version export-ignore
 .editorconfig export-ignore
 .gitattributes export-ignore
 

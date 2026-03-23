@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use SplFileInfo;
 use Tests\Concerns\HasFiles;
 use Tests\Concerns\HasStoreTestUtilities;
-use Tests\Exceptions\FileIntegrityException;
 use ZipStore\OpenedStore;
 use ZipStore\Store;
 
@@ -42,6 +41,8 @@ class PartialReadingAfterPostSerializationTest extends TestCase
     #[TestDox('Partial reading after deserialization')]
     public function handle(): void
     {
+        $this->expectNotToPerformAssertions();
+
         /** @var OpenedStore */
         $openedStore = \unserialize($this->serialiazedOpenedStore);
 
