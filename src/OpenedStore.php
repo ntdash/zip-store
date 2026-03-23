@@ -169,6 +169,11 @@ class OpenedStore
         return 0;
     }
 
+    public function tell(): int|false
+    {
+        return $this->offset;
+    }
+
     public function writeTo(string $path, bool $resetOffset = true): void
     {
         $stream = \fopen($path, 'w');

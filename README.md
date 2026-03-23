@@ -70,6 +70,9 @@ $bytes = 1024 * 1024 * 4; // 4 MiB
 
 $openedStore->seek($offset);
 $buffer = $openedStore->read($bytes);
+
+// current offset after seek and read
+echo $openedStore->tell();  // 4194304 
 ```
 
 ### Advanced Reading
